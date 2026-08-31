@@ -1,0 +1,2983 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<title>Squishy Rush 3D</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#070a18;
+  font-family:Arial,sans-serif;
+}
+
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+}
+
+#ui{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  color:white;
+}
+
+.topbar{
+  position:absolute;
+  top:12px;
+  left:12px;
+  right:12px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+}
+
+.stats{
+  background:rgba(7,11,30,.72);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:18px;
+  padding:9px 14px;
+  backdrop-filter:blur(10px);
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.35);
+}
+
+.stats div{
+  font-weight:900;
+  margin:2px;
+}
+
+#combo{
+  color:#ffd84d;
+}
+
+#pause{
+  pointer-events:auto;
+
+  width:48px;
+  height:48px;
+
+  border:0;
+  border-radius:15px;
+
+  background:rgba(255,255,255,.14);
+  color:white;
+
+  font-size:21px;
+  font-weight:900;
+}
+
+.overlay{
+  position:absolute;
+  inset:0;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background:rgba(2,4,15,.65);
+  backdrop-filter:blur(8px);
+
+  pointer-events:auto;
+}
+
+.card{
+  width:min(92vw,480px);
+
+  background:
+    linear-gradient(
+      180deg,
+      #222b52,
+      #11162d
+    );
+
+  border-radius:28px;
+
+  padding:25px;
+
+  text-align:center;
+
+  border:1px solid rgba(255,255,255,.15);
+
+  box-shadow:
+    0 30px 100px rgba(0,0,0,.55);
+}
+
+h1{
+  font-size:44px;
+  margin:0 0 8px;
+}
+
+h2{
+  margin:0 0 15px;
+}
+
+.sub{
+  opacity:.75;
+  margin-bottom:20px;
+}
+
+button{
+  border:0;
+  border-radius:15px;
+
+  padding:13px 18px;
+  margin:5px;
+
+  color:white;
+
+  font-weight:900;
+  font-size:16px;
+
+  background:#5867ff;
+
+  box-shadow:
+    0 5px 0 #303b9d;
+}
+
+button:active{
+  transform:translateY(3px);
+  box-shadow:0 2px 0 #303b9d;
+}
+
+.play{
+  width:90%;
+  font-size:21px;
+  padding:16px;
+
+  background:#25c97a;
+  box-shadow:0 5px 0 #137448;
+}
+
+.shop{
+  background:#ff9d35;
+  box-shadow:0 5px 0 #a85b16;
+}
+
+.gray{
+  background:#4b536e;
+  box-shadow:0 5px 0 #2d3246;
+}
+
+.hidden{
+  display:none!important;
+}
+
+/* MOBILE JOYSTICK */
+
+#controls{
+  position:absolute;
+  bottom:18px;
+  left:18px;
+
+  pointer-events:auto;
+}
+
+#joystick{
+  width:125px;
+  height:125px;
+
+  border-radius:50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,255,255,.13),
+      rgba(255,255,255,.04)
+    );
+
+  border:2px solid rgba(255,255,255,.13);
+
+  position:relative;
+}
+
+#stick{
+  width:55px;
+  height:55px;
+
+  position:absolute;
+
+  left:33px;
+  top:33px;
+
+  border-radius:50%;
+
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(255,255,255,.65),
+      rgba(255,255,255,.18)
+    );
+
+  box-shadow:
+    0 6px 20px rgba(0,0,0,.3);
+}
+
+#toast{
+  position:absolute;
+
+  top:92px;
+  left:50%;
+
+  transform:
+    translate(-50%,-20px);
+
+  opacity:0;
+
+  background:#ffd84d;
+  color:#15182a;
+
+  padding:10px 18px;
+
+  border-radius:15px;
+
+  font-weight:900;
+
+  transition:.25s;
+}
+
+#toast.show{
+  opacity:1;
+
+  transform:
+    translate(-50%,0);
+}
+
+#level{
+  position:absolute;
+
+  top:76px;
+  left:50%;
+
+  transform:translateX(-50%);
+
+  font-size:12px;
+  font-weight:900;
+
+  opacity:.65;
+}
+
+.skinGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.skin{
+  background:#293354;
+
+  padding:12px;
+
+  border-radius:17px;
+
+  border:2px solid transparent;
+}
+
+.skin.selected{
+  border-color:#ffd84d;
+}
+
+.skinEmoji{
+  font-size:38px;
+}
+
+.small{
+  opacity:.65;
+  font-size:12px;
+}
+
+.mission{
+  background:#293354;
+
+  padding:12px;
+
+  margin:8px 0;
+
+  border-radius:15px;
+
+  text-align:left;
+}
+
+.progress{
+  height:8px;
+
+  background:#0b1021;
+
+  border-radius:10px;
+
+  margin-top:6px;
+
+  overflow:hidden;
+}
+
+.progress div{
+  height:100%;
+  background:#ffd84d;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="ui">
+
+  <div class="topbar">
+
+    <div class="stats">
+
+      <div>⭐ Score:
+        <span id="score">0</span>
+      </div>
+
+      <div>🪙 Coins:
+        <span id="coins">0</span>
+      </div>
+
+      <div id="combo">
+        🔥 x1
+      </div>
+
+    </div>
+
+    <button id="pause">Ⅱ</button>
+
+  </div>
+
+  <div id="level">LEVEL 1</div>
+
+  <div id="toast"></div>
+
+  <div id="controls">
+
+    <div id="joystick">
+
+      <div id="stick"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- MENU -->
+
+  <div class="overlay" id="menu">
+
+    <div class="card">
+
+      <h1>🧸</h1>
+
+      <h1>Squishy Rush</h1>
+
+      <div class="sub">
+        THE 3D SQUISHY CHASE
+      </div>
+
+      <button class="play" id="play">
+        ▶ PLAY
+      </button>
+
+      <br>
+
+      <button class="shop" id="openShop">
+        🛍️ SHOP
+      </button>
+
+      <button id="openMissions">
+        🎯 MISSIONS
+      </button>
+
+      <p>
+        🏆 Best:
+        <b id="bestMenu">0</b>
+      </p>
+
+      <p class="small">
+        WASD / Arrow Keys on laptop<br>
+        Drag joystick on phone
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- GAME OVER -->
+
+  <div class="overlay hidden" id="gameOver">
+
+    <div class="card">
+
+      <h1>💥</h1>
+
+      <h2>RUN OVER</h2>
+
+      <p>
+        SCORE
+      </p>
+
+      <h1 id="finalScore">0</h1>
+
+      <p>
+        🪙 +<b id="earned">0</b>
+      </p>
+
+      <p>
+        🏆 Best:
+        <b id="finalBest">0</b>
+      </p>
+
+      <button class="play" id="again">
+        🔄 PLAY AGAIN
+      </button>
+
+      <button class="gray" id="home">
+        🏠 HOME
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- SHOP -->
+
+  <div class="overlay hidden" id="shopPanel">
+
+    <div class="card">
+
+      <h2>🛍️ SQUISHY SHOP</h2>
+
+      <p>
+        🪙 <b id="shopCoins">0</b>
+      </p>
+
+      <div class="skinGrid" id="skins"></div>
+
+      <br>
+
+      <button class="gray" id="closeShop">
+        CLOSE
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- MISSIONS -->
+
+  <div class="overlay hidden" id="missionPanel">
+
+    <div class="card">
+
+      <h2>🎯 MISSIONS</h2>
+
+      <div id="missions"></div>
+
+      <button class="gray" id="closeMissions">
+        CLOSE
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* ==========================================================
+   SQUISHY RUSH 3D
+========================================================== */
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+
+let W=innerWidth;
+let H=innerHeight;
+
+let DPR=devicePixelRatio||1;
+
+function resize(){
+
+  W=innerWidth;
+  H=innerHeight;
+
+  canvas.width=W*DPR;
+  canvas.height=H*DPR;
+
+  canvas.style.width=W+"px";
+  canvas.style.height=H+"px";
+
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+addEventListener("resize",resize);
+
+resize();
+
+
+/* ==========================================================
+   SAVE
+========================================================== */
+
+let save=JSON.parse(
+  localStorage.getItem("squishy3D")
+)||{
+  coins:0,
+  best:0,
+  skin:0,
+  owned:[0],
+
+  missions:{
+    collect:0,
+    score:0,
+    combo:0
+  }
+};
+
+function saveData(){
+
+  localStorage.setItem(
+    "squishy3D",
+    JSON.stringify(save)
+  );
+}
+
+
+/* ==========================================================
+   SKINS
+========================================================== */
+
+const skins=[
+
+ {
+   name:"Classic",
+   emoji:"🧸",
+   color:"#ffc96b",
+   price:0
+ },
+
+ {
+   name:"Blue",
+   emoji:"🐻",
+   color:"#6e91ff",
+   price:100
+ },
+
+ {
+   name:"Strawberry",
+   emoji:"🍓",
+   color:"#ff6382",
+   price:250
+ },
+
+ {
+   name:"Lemon",
+   emoji:"🍋",
+   color:"#ffe34e",
+   price:500
+ },
+
+ {
+   name:"Mint",
+   emoji:"🍏",
+   color:"#62e5a3",
+   price:900
+ },
+
+ {
+   name:"Galaxy",
+   emoji:"🌌",
+   color:"#ae71ff",
+   price:1500
+ },
+
+ {
+   name:"Golden",
+   emoji:"👑",
+   color:"#ffd84d",
+   price:3000
+ },
+
+ {
+   name:"SECRET",
+   emoji:"❓",
+   color:"#ffffff",
+   price:6000
+ }
+
+];
+
+
+/* ==========================================================
+   GAME
+========================================================== */
+
+let playing=false;
+let paused=false;
+
+let score=0;
+let runCoins=0;
+
+let combo=1;
+let comboTimer=0;
+
+let level=1;
+
+let frame=0;
+
+let player={
+
+  x:0,
+  y:0,
+
+  vx:0,
+  vy:0,
+
+  r:24,
+
+  rot:0
+};
+
+
+let squishies=[];
+let obstacles=[];
+let powerups=[];
+
+let particles=[];
+let floaters=[];
+
+
+/* ==========================================================
+   WORLD
+========================================================== */
+
+const world={
+
+  width:1400,
+  height:900,
+
+  cameraX:0,
+  cameraY:0
+
+};
+
+
+/* ==========================================================
+   INPUT
+========================================================== */
+
+let keys={};
+
+addEventListener(
+ "keydown",
+ e=>{
+   keys[e.key.toLowerCase()]=true;
+
+   if(e.key==="Escape")
+     togglePause();
+ }
+);
+
+addEventListener(
+ "keyup",
+ e=>{
+   keys[e.key.toLowerCase()]=false;
+ }
+);
+
+
+/* ==========================================================
+   JOYSTICK
+========================================================== */
+
+const joy=document.getElementById("joystick");
+const stick=document.getElementById("stick");
+
+let joyX=0;
+let joyY=0;
+let joyActive=false;
+
+function joystickMove(e){
+
+  const r=joy.getBoundingClientRect();
+
+  const cx=r.left+r.width/2;
+  const cy=r.top+r.height/2;
+
+  let x=e.clientX-cx;
+  let y=e.clientY-cy;
+
+  const max=43;
+
+  let d=Math.hypot(x,y);
+
+  if(d>max){
+
+    x=x/d*max;
+    y=y/d*max;
+
+  }
+
+  joyX=x/max;
+  joyY=y/max;
+
+  stick.style.transform=
+    `translate(${x}px,${y}px)`;
+}
+
+
+joy.addEventListener(
+ "pointerdown",
+ e=>{
+   joyActive=true;
+   joystickMove(e);
+ }
+);
+
+addEventListener(
+ "pointermove",
+ e=>{
+   if(joyActive)
+     joystickMove(e);
+ }
+);
+
+addEventListener(
+ "pointerup",
+ ()=>{
+   joyActive=false;
+
+   joyX=0;
+   joyY=0;
+
+   stick.style.transform=
+     "translate(0,0)";
+ }
+);
+
+
+/* ==========================================================
+   START
+========================================================== */
+
+function start(){
+
+  document.getElementById("menu")
+    .classList.add("hidden");
+
+  document.getElementById("gameOver")
+    .classList.add("hidden");
+
+  playing=true;
+  paused=false;
+
+  score=0;
+  runCoins=0;
+
+  combo=1;
+  comboTimer=0;
+
+  level=1;
+  frame=0;
+
+  squishies=[];
+  obstacles=[];
+  powerups=[];
+  particles=[];
+  floaters=[];
+
+  player.x=world.width/2;
+  player.y=world.height/2;
+
+  player.vx=0;
+  player.vy=0;
+
+  world.cameraX=0;
+  world.cameraY=0;
+
+  for(let i=0;i<9;i++)
+    spawnSquishy();
+
+  for(let i=0;i<3;i++)
+    spawnObstacle();
+
+  updateUI();
+}
+
+
+/* ==========================================================
+   SPAWN SQUISHY
+========================================================== */
+
+const types=[
+
+ {
+   emoji:"🐻",
+   value:10,
+   rarity:"Common"
+ },
+
+ {
+   emoji:"🐸",
+   value:15,
+   rarity:"Common"
+ },
+
+ {
+   emoji:"🐱",
+   value:20,
+   rarity:"Common"
+ },
+
+ {
+   emoji:"🐶",
+   value:25,
+   rarity:"Common"
+ },
+
+ {
+   emoji:"🦊",
+   value:35,
+   rarity:"Rare"
+ }
+
+];
+
+
+function spawnSquishy(){
+
+  let x=
+    100+
+    Math.random()*
+    (world.width-200);
+
+  let y=
+    100+
+    Math.random()*
+    (world.height-200);
+
+
+  let type=
+    types[
+      Math.floor(
+        Math.random()*types.length
+      )
+    ];
+
+
+  let r=Math.random();
+
+  let emoji=type.emoji;
+  let value=type.value;
+  let rarity=type.rarity;
+
+
+  if(r<.025){
+
+    emoji="🌈";
+    value*=12;
+    rarity="LEGENDARY";
+
+  }else if(r<.08){
+
+    emoji="💎";
+    value*=6;
+    rarity="EPIC";
+
+  }
+
+
+  squishies.push({
+
+    x,
+    y,
+
+    r:24,
+
+    emoji,
+    value,
+    rarity,
+
+    phase:Math.random()*10
+
+  });
+
+}
+
+
+/* ==========================================================
+   OBSTACLES
+========================================================== */
+
+function spawnObstacle(){
+
+  obstacles.push({
+
+    x:
+      100+
+      Math.random()*
+      (world.width-200),
+
+    y:
+      100+
+      Math.random()*
+      (world.height-200),
+
+    r:28,
+
+    rot:Math.random()*6,
+
+    speed:
+      .025+
+      Math.random()*.025
+
+  });
+
+}
+
+
+/* ==========================================================
+   POWERUPS
+========================================================== */
+
+function spawnPowerup(){
+
+  const types=[
+
+    {
+      type:"magnet",
+      emoji:"🧲"
+    },
+
+    {
+      type:"double",
+      emoji:"⚡"
+    },
+
+    {
+      type:"shield",
+      emoji:"🛡️"
+    }
+
+  ];
+
+  let p=
+    types[
+      Math.floor(
+        Math.random()*types.length
+      )
+    ];
+
+
+  powerups.push({
+
+    x:
+      100+
+      Math.random()*
+      (world.width-200),
+
+    y:
+      100+
+      Math.random()*
+      (world.height-200),
+
+    r:20,
+
+    emoji:p.emoji,
+    type:p.type,
+
+    life:800
+
+  });
+
+}
+
+
+/* ==========================================================
+   EFFECTS
+========================================================== */
+
+let effects={
+
+  magnet:0,
+  double:0,
+  shield:0
+
+};
+
+
+/* ==========================================================
+   DISTANCE
+========================================================== */
+
+function distance(a,b){
+
+  return Math.hypot(
+    a.x-b.x,
+    a.y-b.y
+  );
+
+}
+
+
+/* ==========================================================
+   COLLECT
+========================================================== */
+
+function collectSquishy(s,i){
+
+  squishies.splice(i,1);
+
+  let multiplier=
+    effects.double>0?2:1;
+
+  let gain=
+    s.value*
+    combo*
+    multiplier;
+
+  score+=gain;
+
+  runCoins+=
+    Math.max(
+      1,
+      Math.floor(s.value/10)
+    );
+
+  combo=
+    Math.min(
+      20,
+      combo+1
+    );
+
+  comboTimer=180;
+
+  save.missions.collect++;
+
+  save.missions.score+=
+    Math.floor(gain);
+
+  save.missions.combo=
+    Math.max(
+      save.missions.combo,
+      combo
+    );
+
+
+  burst(
+    s.x,
+    s.y,
+    s.rarity==="LEGENDARY"
+      ?"#ffd84d"
+      :"#ffffff"
+  );
+
+
+  floatingText(
+    s.x,
+    s.y,
+    "+"+Math.floor(gain),
+    s.rarity
+  );
+
+
+  if(s.rarity==="LEGENDARY")
+    toast("🌈 LEGENDARY!");
+
+  else if(s.rarity==="EPIC")
+    toast("💎 EPIC!");
+
+  else if(s.rarity==="Rare")
+    toast("✨ RARE!");
+
+
+  saveData();
+
+}
+
+
+/* ==========================================================
+   POWERUP COLLECT
+========================================================== */
+
+function collectPower(p,i){
+
+  powerups.splice(i,1);
+
+  effects[p.type]=700;
+
+  burst(
+    p.x,
+    p.y,
+    "#70eaff"
+  );
+
+  toast(
+    p.type==="magnet"
+      ?"🧲 MAGNET!"
+      :
+    p.type==="double"
+      ?"⚡ DOUBLE!"
+      :
+      "🛡️ SHIELD!"
+  );
+
+}
+
+
+/* ==========================================================
+   HIT
+========================================================== */
+
+function hitObstacle(o,i){
+
+  if(effects.shield>0){
+
+    effects.shield=0;
+
+    obstacles.splice(i,1);
+
+    burst(
+      o.x,
+      o.y,
+      "#72aaff"
+    );
+
+    toast("🛡️ SAVED!");
+
+    return;
+
+  }
+
+  burst(
+    player.x,
+    player.y,
+    "#ff5262"
+  );
+
+  gameOver();
+
+}
+
+
+/* ==========================================================
+   GAME OVER
+========================================================== */
+
+function gameOver(){
+
+  if(!playing)
+    return;
+
+  playing=false;
+
+  if(score>save.best)
+    save.best=Math.floor(score);
+
+  save.coins+=runCoins;
+
+  saveData();
+
+  document.getElementById("finalScore")
+    .textContent=Math.floor(score);
+
+  document.getElementById("earned")
+    .textContent=runCoins;
+
+  document.getElementById("finalBest")
+    .textContent=save.best;
+
+  document.getElementById("gameOver")
+    .classList.remove("hidden");
+
+  updateUI();
+
+}
+
+
+/* ==========================================================
+   PLAYER UPDATE
+========================================================== */
+
+function updatePlayer(){
+
+  let dx=0;
+  let dy=0;
+
+  if(keys["w"]||keys["arrowup"])
+    dy--;
+
+  if(keys["s"]||keys["arrowdown"])
+    dy++;
+
+  if(keys["a"]||keys["arrowleft"])
+    dx--;
+
+  if(keys["d"]||keys["arrowright"])
+    dx++;
+
+
+  if(joyActive){
+
+    dx=joyX;
+    dy=joyY;
+
+  }
+
+
+  let len=Math.hypot(dx,dy);
+
+  if(len>0){
+
+    dx/=len;
+    dy/=len;
+
+  }
+
+
+  let speed=
+    .34+
+    level*.015;
+
+
+  player.vx+=dx*speed;
+  player.vy+=dy*speed;
+
+
+  player.vx*=.88;
+  player.vy*=.88;
+
+
+  let maxSpeed=
+    5+
+    level*.04;
+
+
+  let sp=Math.hypot(
+    player.vx,
+    player.vy
+  );
+
+
+  if(sp>maxSpeed){
+
+    player.vx=
+      player.vx/sp*maxSpeed;
+
+    player.vy=
+      player.vy/sp*maxSpeed;
+
+  }
+
+
+  player.x+=player.vx;
+  player.y+=player.vy;
+
+
+  player.x=
+    Math.max(
+      45,
+      Math.min(
+        world.width-45,
+        player.x
+      )
+    );
+
+  player.y=
+    Math.max(
+      45,
+      Math.min(
+        world.height-45,
+        player.y
+      )
+    );
+
+
+  if(sp>.1)
+    player.rot+=.06;
+
+
+}
+
+
+/* ==========================================================
+   CAMERA
+========================================================== */
+
+function updateCamera(){
+
+  world.cameraX=
+    player.x-
+    W/2;
+
+  world.cameraY=
+    player.y-
+    H/2;
+
+
+  world.cameraX=
+    Math.max(
+      0,
+      Math.min(
+        world.width-W,
+        world.cameraX
+      )
+    );
+
+
+  world.cameraY=
+    Math.max(
+      0,
+      Math.min(
+        world.height-H,
+        world.cameraY
+      )
+    );
+
+}
+
+
+/* ==========================================================
+   3D PROJECTION
+========================================================== */
+
+function project(x,y,z=0){
+
+  let sx=
+    x-
+    world.cameraX;
+
+  let sy=
+    y-
+    world.cameraY;
+
+  /*
+    fake 3D vertical lift
+  */
+
+  sy-=z*.7;
+
+  return {
+    x:sx,
+    y:sy,
+    scale:
+      1+
+      z*.003
+  };
+
+}
+
+
+/* ==========================================================
+   3D FLOOR
+========================================================== */
+
+function drawWorld(){
+
+  ctx.fillStyle="#0b1024";
+  ctx.fillRect(
+    0,
+    0,
+    W,
+    H
+  );
+
+
+  /* floor */
+
+  ctx.fillStyle="#171e3b";
+
+  ctx.fillRect(
+    -world.cameraX,
+    -world.cameraY,
+    world.width,
+    world.height
+  );
+
+
+  /* tiles */
+
+  const grid=70;
+
+  ctx.strokeStyle=
+    "rgba(110,130,255,.10)";
+
+  ctx.lineWidth=1;
+
+
+  let startX=
+    Math.floor(
+      world.cameraX/grid
+    )*grid;
+
+  let endX=
+    world.cameraX+W+grid;
+
+
+  for(
+    let x=startX;
+    x<endX;
+    x+=grid
+  ){
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x-world.cameraX,
+      0
+    );
+
+    ctx.lineTo(
+      x-world.cameraX,
+      H
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  let startY=
+    Math.floor(
+      world.cameraY/grid
+    )*grid;
+
+  let endY=
+    world.cameraY+H+grid;
+
+
+  for(
+    let y=startY;
+    y<endY;
+    y+=grid
+  ){
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      0,
+      y-world.cameraY
+    );
+
+    ctx.lineTo(
+      W,
+      y-world.cameraY
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  /* arena walls */
+
+  drawWall(
+    0,
+    0,
+    world.width,
+    30
+  );
+
+  drawWall(
+    0,
+    world.height-30,
+    world.width,
+    30
+  );
+
+  drawWall(
+    0,
+    0,
+    30,
+    world.height
+  );
+
+  drawWall(
+    world.width-30,
+    0,
+    30,
+    world.height
+  );
+
+}
+
+
+/* ==========================================================
+   3D WALL
+========================================================== */
+
+function drawWall(x,y,w,h){
+
+  let sx=x-world.cameraX;
+  let sy=y-world.cameraY;
+
+  /* front */
+
+  ctx.fillStyle="#303b6b";
+
+  ctx.fillRect(
+    sx,
+    sy,
+    w,
+    h
+  );
+
+
+  /* top highlight */
+
+  ctx.fillStyle="#53659b";
+
+  ctx.fillRect(
+    sx,
+    sy,
+    w,
+    7
+  );
+
+
+  /* shadow side */
+
+  ctx.fillStyle="rgba(0,0,0,.25)";
+
+  ctx.fillRect(
+    sx,
+    sy+h-7,
+    w,
+    7
+  );
+
+}
+
+
+/* ==========================================================
+   3D SQUISHY
+========================================================== */
+
+function drawSquishy(s){
+
+  let p=
+    project(
+      s.x,
+      s.y
+    );
+
+
+  let bob=
+    Math.sin(
+      frame*.07+
+      s.phase
+    )*4;
+
+
+  let x=p.x;
+  let y=p.y+bob;
+
+
+  /* shadow */
+
+  ctx.save();
+
+  ctx.fillStyle=
+    "rgba(0,0,0,.35)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    x,
+    y+22,
+    27,
+    9,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* 3D body */
+
+  let grad=
+    ctx.createRadialGradient(
+      x-8,
+      y-10,
+      3,
+      x,
+      y,
+      30
+    );
+
+
+  grad.addColorStop(
+    0,
+    "#ffffff"
+  );
+
+  grad.addColorStop(
+    .12,
+    "#ffe6a0"
+  );
+
+  grad.addColorStop(
+    .65,
+    "#ffc96b"
+  );
+
+  grad.addColorStop(
+    1,
+    "#bd713d"
+  );
+
+
+  ctx.fillStyle=grad;
+
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x-21,
+    y-8
+  );
+
+  ctx.bezierCurveTo(
+    x-28,
+    y-27,
+    x+22,
+    y-31,
+    x+22,
+    y-8
+  );
+
+  ctx.bezierCurveTo(
+    x+31,
+    y+17,
+    x+10,
+    y+29,
+    x,
+    y+27
+  );
+
+  ctx.bezierCurveTo(
+    x-15,
+    y+30,
+    x-31,
+    y+13,
+    x-21,
+    y-8
+  );
+
+  ctx.fill();
+
+
+  /* shine */
+
+  ctx.fillStyle=
+    "rgba(255,255,255,.55)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    x-9,
+    y-13,
+    8,
+    4,
+    -.4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* face */
+
+  ctx.font="24px Arial";
+
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+
+  ctx.fillText(
+    s.emoji,
+    x,
+    y+1
+  );
+
+
+  ctx.restore();
+
+}
+
+
+/* ==========================================================
+   3D PLAYER
+========================================================== */
+
+function drawPlayer(){
+
+  let skin=
+    skins[save.skin];
+
+
+  let x=
+    player.x-
+    world.cameraX;
+
+  let y=
+    player.y-
+    world.cameraY;
+
+
+  /* shadow */
+
+  ctx.fillStyle=
+    "rgba(0,0,0,.38)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    x,
+    y+27,
+    30,
+    10,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* shield */
+
+  if(effects.shield>0){
+
+    ctx.strokeStyle=
+      "rgba(90,190,255,.9)";
+
+    ctx.lineWidth=4;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      37+
+      Math.sin(frame*.15)*3,
+      0,
+      Math.PI*2
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  /* body */
+
+  let grad=
+    ctx.createRadialGradient(
+      x-10,
+      y-13,
+      3,
+      x,
+      y,
+      33
+    );
+
+
+  grad.addColorStop(
+    0,
+    "#ffffff"
+  );
+
+  grad.addColorStop(
+    .12,
+    skin.color
+  );
+
+  grad.addColorStop(
+    .7,
+    skin.color
+  );
+
+  grad.addColorStop(
+    1,
+    "#75452e"
+  );
+
+
+  ctx.fillStyle=grad;
+
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x-22,
+    y-8
+  );
+
+  ctx.bezierCurveTo(
+    x-29,
+    y-32,
+    x+28,
+    y-32,
+    x+22,
+    y-8
+  );
+
+  ctx.bezierCurveTo(
+    x+31,
+    y+18,
+    x+12,
+    y+31,
+    x,
+    y+28
+  );
+
+  ctx.bezierCurveTo(
+    x-15,
+    y+31,
+    x-31,
+    y+15,
+    x-22,
+    y-8
+  );
+
+  ctx.fill();
+
+
+  /* highlight */
+
+  ctx.fillStyle=
+    "rgba(255,255,255,.65)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    x-9,
+    y-15,
+    9,
+    4,
+    -.4,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* eyes */
+
+  ctx.fillStyle="#161a2b";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    x-9,
+    y-3,
+    3,
+    0,
+    Math.PI*2
+  );
+
+  ctx.arc(
+    x+9,
+    y-3,
+    3,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* smile */
+
+  ctx.strokeStyle="#161a2b";
+  ctx.lineWidth=2;
+
+  ctx.beginPath();
+
+  ctx.arc(
+    x,
+    y+3,
+    7,
+    0,
+    Math.PI
+  );
+
+  ctx.stroke();
+
+}
+
+
+/* ==========================================================
+   OBSTACLE DRAW
+========================================================== */
+
+function drawObstacle(o){
+
+  let x=
+    o.x-world.cameraX;
+
+  let y=
+    o.y-world.cameraY;
+
+
+  ctx.save();
+
+  ctx.translate(
+    x,
+    y
+  );
+
+  ctx.rotate(o.rot);
+
+
+  /* shadow */
+
+  ctx.fillStyle=
+    "rgba(0,0,0,.35)";
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+    0,
+    30,
+    32,
+    10,
+    0,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  /* spikes */
+
+  ctx.fillStyle="#e84d62";
+
+  ctx.beginPath();
+
+  for(let i=0;i<12;i++){
+
+    let a=
+      i*Math.PI/6;
+
+    let r=
+      i%2===0
+        ?30
+        :13;
+
+    let px=
+      Math.cos(a)*r;
+
+    let py=
+      Math.sin(a)*r;
+
+    if(i===0)
+      ctx.moveTo(px,py);
+    else
+      ctx.lineTo(px,py);
+
+  }
+
+  ctx.closePath();
+
+  ctx.fill();
+
+
+  /* center */
+
+  ctx.fillStyle="#ff8290";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    0,
+    12,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.restore();
+
+}
+
+
+/* ==========================================================
+   POWERUP DRAW
+========================================================== */
+
+function drawPowerup(p){
+
+  let x=
+    p.x-world.cameraX;
+
+  let y=
+    p.y-world.cameraY;
+
+
+  let pulse=
+    1+
+    Math.sin(frame*.12)*.12;
+
+
+  ctx.save();
+
+  ctx.translate(x,y);
+
+  ctx.scale(
+    pulse,
+    pulse
+  );
+
+
+  ctx.fillStyle=
+    "rgba(90,220,255,.18)";
+
+  ctx.beginPath();
+
+  ctx.arc(
+    0,
+    0,
+    34,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.font="30px Arial";
+
+  ctx.textAlign="center";
+  ctx.textBaseline="middle";
+
+  ctx.fillText(
+    p.emoji,
+    0,
+    0
+  );
+
+
+  ctx.restore();
+
+}
+
+
+/* ==========================================================
+   PARTICLES
+========================================================== */
+
+function burst(x,y,color){
+
+  for(let i=0;i<22;i++){
+
+    let a=
+      Math.random()*
+      Math.PI*2;
+
+    let speed=
+      1+
+      Math.random()*4;
+
+
+    particles.push({
+
+      x,
+      y,
+
+      vx:
+        Math.cos(a)*speed,
+
+      vy:
+        Math.sin(a)*speed,
+
+      life:
+        30+
+        Math.random()*30,
+
+      size:
+        2+
+        Math.random()*4,
+
+      color
+
+    });
+
+  }
+
+}
+
+
+function floatingText(
+  x,
+  y,
+  text,
+  rarity
+){
+
+  floaters.push({
+
+    x,
+    y,
+
+    text,
+
+    life:55,
+
+    color:
+      rarity==="LEGENDARY"
+        ?"#ffd84d"
+        :
+      rarity==="EPIC"
+        ?"#d58cff"
+        :
+      rarity==="Rare"
+        ?"#62dcff"
+        :
+        "#ffffff"
+
+  });
+
+}
+
+
+/* ==========================================================
+   TOAST
+========================================================== */
+
+function toast(text){
+
+  const t=
+    document.getElementById("toast");
+
+  t.textContent=text;
+
+  t.classList.add("show");
+
+  clearTimeout(
+    toast.timer
+  );
+
+  toast.timer=
+    setTimeout(
+      ()=>{
+        t.classList.remove("show");
+      },
+      1200
+    );
+
+}
+
+
+/* ==========================================================
+   UPDATE
+========================================================== */
+
+function update(){
+
+  if(!playing||paused)
+    return;
+
+
+  frame++;
+
+
+  level=
+    1+
+    Math.floor(score/600);
+
+
+  updatePlayer();
+  updateCamera();
+
+
+  /* combo */
+
+  if(comboTimer>0){
+
+    comboTimer--;
+
+    if(comboTimer===0){
+
+      combo=
+        Math.max(
+          1,
+          Math.floor(combo*.5)
+        );
+
+      toast("🔥 COMBO LOST");
+
+    }
+
+  }
+
+
+  /* effects */
+
+  for(let k in effects){
+
+    if(effects[k]>0)
+      effects[k]--;
+
+  }
+
+
+  /* spawn */
+
+  if(frame%55===0){
+
+    if(squishies.length<15)
+      spawnSquishy();
+
+  }
+
+
+  if(
+    frame%Math.max(
+      250,
+      600-level*25
+    )===0
+  ){
+
+    spawnObstacle();
+
+  }
+
+
+  if(
+    frame%850===0
+  ){
+
+    spawnPowerup();
+
+  }
+
+
+  /* squishies */
+
+  for(
+    let i=squishies.length-1;
+    i>=0;
+    i--
+  ){
+
+    let s=squishies[i];
+
+    if(
+      effects.magnet>0 &&
+      distance(player,s)<240
+    ){
+
+      let dx=
+        player.x-s.x;
+
+      let dy=
+        player.y-s.y;
+
+      let d=
+        Math.hypot(dx,dy)||1;
+
+
+      s.x+=
+        dx/d*4;
+
+      s.y+=
+        dy/d*4;
+
+    }
+
+
+    if(
+      distance(player,s)<
+      player.r+s.r
+    ){
+
+      collectSquishy(
+        s,
+        i
+      );
+
+    }
+
+  }
+
+
+  /* obstacles */
+
+  for(
+    let i=obstacles.length-1;
+    i>=0;
+    i--
+  ){
+
+    let o=obstacles[i];
+
+    o.rot+=o.speed;
+
+
+    if(
+      distance(player,o)<
+      player.r+o.r-7
+    ){
+
+      hitObstacle(
+        o,
+        i
+      );
+
+    }
+
+  }
+
+
+  /* powerups */
+
+  for(
+    let i=powerups.length-1;
+    i>=0;
+    i--
+  ){
+
+    let p=powerups[i];
+
+    p.life--;
+
+
+    if(p.life<=0){
+
+      powerups.splice(
+        i,
+        1
+      );
+
+      continue;
+
+    }
+
+
+    if(
+      distance(player,p)<
+      player.r+p.r
+    ){
+
+      collectPower(
+        p,
+        i
+      );
+
+    }
+
+  }
+
+
+  /* particles */
+
+  for(
+    let i=particles.length-1;
+    i>=0;
+    i--
+  ){
+
+    let p=particles[i];
+
+    p.x+=p.vx;
+    p.y+=p.vy;
+
+    p.vx*=.96;
+    p.vy*=.96;
+
+    p.life--;
+
+
+    if(p.life<=0)
+      particles.splice(
+        i,
+        1
+      );
+
+  }
+
+
+  /* floaters */
+
+  for(
+    let i=floaters.length-1;
+    i>=0;
+    i--
+  ){
+
+    let f=floaters[i];
+
+    f.y-=1;
+    f.life--;
+
+
+    if(f.life<=0)
+      floaters.splice(
+        i,
+        1
+      );
+
+  }
+
+
+  updateUI();
+
+}
+
+
+/* ==========================================================
+   DRAW
+========================================================== */
+
+function draw(){
+
+  drawWorld();
+
+
+  if(!playing)
+    return;
+
+
+  /* powerups */
+
+  for(
+    const p of powerups
+  )
+    drawPowerup(p);
+
+
+  /* squishies */
+
+  for(
+    const s of squishies
+  )
+    drawSquishy(s);
+
+
+  /* obstacles */
+
+  for(
+    const o of obstacles
+  )
+    drawObstacle(o);
+
+
+  /* player */
+
+  drawPlayer();
+
+
+  /* particles */
+
+  for(
+    const p of particles
+  ){
+
+    let x=
+      p.x-world.cameraX;
+
+    let y=
+      p.y-world.cameraY;
+
+
+    ctx.globalAlpha=
+      Math.max(
+        0,
+        p.life/50
+      );
+
+    ctx.fillStyle=
+      p.color;
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      p.size,
+      0,
+      Math.PI*2
+    );
+
+    ctx.fill();
+
+  }
+
+
+  ctx.globalAlpha=1;
+
+
+  /* floating text */
+
+  for(
+    const f of floaters
+  ){
+
+    let x=
+      f.x-world.cameraX;
+
+    let y=
+      f.y-world.cameraY;
+
+
+    ctx.globalAlpha=
+      f.life/55;
+
+    ctx.fillStyle=
+      f.color;
+
+    ctx.font=
+      "900 18px Arial";
+
+    ctx.textAlign=
+      "center";
+
+
+    ctx.fillText(
+      f.text,
+      x,
+      y
+    );
+
+  }
+
+
+  ctx.globalAlpha=1;
+
+
+  /* level */
+
+  document.getElementById("level")
+    .textContent=
+      "LEVEL "+level;
+
+}
+
+
+/* ==========================================================
+   LOOP
+========================================================== */
+
+function loop(){
+
+  update();
+  draw();
+
+  requestAnimationFrame(loop);
+
+}
+
+loop();
+
+
+/* ==========================================================
+   UI
+========================================================== */
+
+function updateUI(){
+
+  document.getElementById("score")
+    .textContent=
+      Math.floor(score);
+
+
+  document.getElementById("coins")
+    .textContent=
+      save.coins+runCoins;
+
+
+  document.getElementById("combo")
+    .textContent=
+      "🔥 x"+combo;
+
+
+  document.getElementById("bestMenu")
+    .textContent=
+      save.best;
+
+}
+
+
+/* ==========================================================
+   PAUSE
+========================================================== */
+
+function togglePause(){
+
+  if(!playing)
+    return;
+
+  paused=!paused;
+
+  document.getElementById("pause")
+    .textContent=
+      paused?"▶":"Ⅱ";
+
+}
+
+
+/* ==========================================================
+   BUTTONS
+========================================================== */
+
+document.getElementById("play")
+  .onclick=start;
+
+document.getElementById("again")
+  .onclick=start;
+
+
+document.getElementById("home")
+  .onclick=()=>{
+
+    document.getElementById("gameOver")
+      .classList.add("hidden");
+
+    document.getElementById("menu")
+      .classList.remove("hidden");
+
+  };
+
+
+document.getElementById("pause")
+  .onclick=togglePause;
+
+
+/* ==========================================================
+   SHOP
+========================================================== */
+
+function renderShop(){
+
+  const box=
+    document.getElementById("skins");
+
+  box.innerHTML="";
+
+
+  document.getElementById("shopCoins")
+    .textContent=
+      save.coins;
+
+
+  skins.forEach(
+    (s,i)=>{
+
+      let owned=
+        save.owned.includes(i);
+
+
+      let div=
+        document.createElement("div");
+
+
+      div.className=
+        "skin"+
+        (
+          save.skin===i
+            ?" selected"
+            :""
+        );
+
+
+      div.innerHTML=`
+
+        <div class="skinEmoji">
+          ${s.emoji}
+        </div>
+
+        <b>${s.name}</b>
+
+        <div class="small">
+          ${
+            owned
+              ?"OWNED"
+              :"🪙 "+s.price
+          }
+        </div>
+
+      `;
+
+
+      let button=
+        document.createElement("button");
+
+
+      if(save.skin===i){
+
+        button.textContent=
+          "EQUIPPED";
+
+        button.className=
+          "gray";
+
+      }else if(owned){
+
+        button.textContent=
+          "EQUIP";
+
+      }else{
+
+        button.textContent=
+          "BUY";
+
+        button.className=
+          "shop";
+
+      }
+
+
+      button.onclick=()=>{
+
+        if(owned){
+
+          save.skin=i;
+
+          saveData();
+
+          renderShop();
+
+          toast(
+            "✅ EQUIPPED"
+          );
+
+        }else{
+
+          if(save.coins>=s.price){
+
+            save.coins-=
+              s.price;
+
+            save.owned.push(i);
+
+            save.skin=i;
+
+            saveData();
+
+            renderShop();
+
+            toast(
+              "🎉 NEW SKIN!"
+            );
+
+          }else{
+
+            toast(
+              "❌ NOT ENOUGH COINS"
+            );
+
+          }
+
+        }
+
+      };
+
+
+      div.appendChild(
+        button
+      );
+
+      box.appendChild(
+        div
+      );
+
+    }
+  );
+
+}
+
+
+document.getElementById("openShop")
+  .onclick=()=>{
+
+    renderShop();
+
+    document.getElementById("shopPanel")
+      .classList.remove("hidden");
+
+  };
+
+
+document.getElementById("closeShop")
+  .onclick=()=>{
+
+    document.getElementById("shopPanel")
+      .classList.add("hidden");
+
+  };
+
+
+/* ==========================================================
+   MISSIONS
+========================================================== */
+
+function renderMissions(){
+
+  const box=
+    document.getElementById("missions");
+
+  box.innerHTML="";
+
+
+  const list=[
+
+    {
+      name:"Squishy Collector",
+      desc:"Collect 25 Squishies",
+      value:save.missions.collect,
+      goal:25,
+      reward:100
+    },
+
+    {
+      name:"Score Hunter",
+      desc:"Reach 1,000 score",
+      value:save.missions.score,
+      goal:1000,
+      reward:150
+    },
+
+    {
+      name:"Combo Master",
+      desc:"Reach x10",
+      value:save.missions.combo,
+      goal:10,
+      reward:250
+    }
+
+  ];
+
+
+  list.forEach(
+    m=>{
+
+      let done=
+        m.value>=m.goal;
+
+
+      let percent=
+        Math.min(
+          100,
+          m.value/m.goal*100
+        );
+
+
+      let div=
+        document.createElement("div");
+
+
+      div.className=
+        "mission";
+
+
+      div.innerHTML=`
+
+        <b>
+          ${done?"✅":"🎯"}
+          ${m.name}
+        </b>
+
+        <div class="small">
+          ${m.desc}
+        </div>
+
+        <div class="progress">
+          <div
+            style="
+              width:${percent}%
+            "
+          ></div>
+        </div>
+
+        <div class="small">
+
+          ${Math.min(
+            m.value,
+            m.goal
+          )}
+          /
+          ${m.goal}
+
+          ${
+            done
+              ?" • COMPLETE!"
+              :" • 🪙 "+m.reward
+          }
+
+        </div>
+
+      `;
+
+
+      box.appendChild(div);
+
+    }
+  );
+
+}
+
+
+document.getElementById("openMissions")
+  .onclick=()=>{
+
+    renderMissions();
+
+    document.getElementById("missionPanel")
+      .classList.remove("hidden");
+
+  };
+
+
+document.getElementById("closeMissions")
+  .onclick=()=>{
+
+    document.getElementById("missionPanel")
+      .classList.add("hidden");
+
+  };
+
+
+/* ==========================================================
+   INITIAL
+========================================================== */
+
+updateUI();
+
+</script>
+
+</body>
+</html>
+```
